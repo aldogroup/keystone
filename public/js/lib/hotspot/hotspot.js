@@ -309,37 +309,47 @@
 
     // Prevent the default behavior on all DOM elements
     container.on('click', function(event) {
-      event.preventDefault();
+      if (window.hotspotEnabled) {
+        event.preventDefault();
+      }
     });
 
     // The user clicked - check if where they clicked
     // was a valid area and create a new spot object is so.
     container.on('mousedown', function(event) {
-      var target = event.target
+      if (window.hotspotEnabled) {
+        if (event.which == 1) {
+          var target = event.target
 
-      if ( ! isValidStartingPoint(target))
-        return;
+          if ( ! isValidStartingPoint(target))
+            return;
 
-      dragging = true;
+          dragging = true;
 
-      createHotSpot(target);
+          createHotSpot(target);
+        }
+      }
     });
 
     // Once the user finishes clicking...
     container.on('mouseup', function(event) {
-      if (dragging) {
-        dragging = false;
-        currentSpot.makeEditable();
+      if (window.hotspotEnabled) {
+        if (dragging) {
+          dragging = false;
+          currentSpot.makeEditable();
+        }
       }
     });
 
     // Is the user dragging?
     container.on('mousemove', function(event) {
-      if (dragging) {
-        event.preventDefault();
+      if (window.hotspotEnabled) {
+        if (dragging) {
+          event.preventDefault();
 
-        currentSpot.calculateDragDistance();
-        currentSpot.updateTextarea();
+          currentSpot.calculateDragDistance();
+          currentSpot.updateTextarea();
+        }
       }
     });
 
@@ -359,7 +369,7 @@
   }
 
   // Hotspot, fire away!
-  container.hotspot();
+  //container.hotspot();
 
   window.JST = window.JST || {};
 

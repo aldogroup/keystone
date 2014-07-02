@@ -17,8 +17,11 @@ block js
 	if list.fieldTypes.location
 		script(src="/keystone/js/common/ui-location.js")
 	if list.fieldTypes.cloudinaryimage
-		script(src="/keystone/js/common/ui-cloudinaryimage.js")
+		link(rel="stylesheet", href="/keystone/js/lib/hotspot/hotspot.css")
+		link(rel="stylesheet", href="/keystone/js/lib/jquery-ui/jquery-ui-1.10.4.custom.min.css")
 		script(src="/keystone/js/lib/hotspot/hotspot.js")
+		script(src="/keystone/js/lib/jquery-ui/jquery-ui-1.10.4.custom.min.js")
+		script(src="/keystone/js/common/ui-cloudinaryimage.js")
 	if list.fieldTypes.cloudinaryimages
 		script(src="/keystone/js/common/ui-cloudinaryimages.js")
 	if list.fieldTypes.s3file

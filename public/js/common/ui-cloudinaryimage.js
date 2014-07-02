@@ -1,40 +1,40 @@
 jQuery(function($) {
 	var supportedTypes = ['image/gif', 'image/png', 'image/jpeg', 'image/bmp', 'image/x-icon', 'application/pdf', 'image/x-tiff', 'image/x-tiff', 'application/postscript', 'image/vnd.adobe.photoshop'];
-	
+
 	// Cloudinary Image
 	$('.field.type-cloudinaryimage').each(function() {
-	
+
 		var $el = $(this),
 			data = $el.data();
-		
+
 		var $action = $el.find('.field-action'),
 			$upload = $el.find('.field-upload');
-		
+
 		var $uploadBtn = $el.find('.btn-upload-image'),
 			$deleteBtn = $el.find('.btn-delete-image'),
 			$cancelBtn = $el.find('.btn-cancel-image'),
 			$undoBtn = $el.find('.btn-undo-image');
-			
+
 		var $uploadQueued = $el.find('.upload-queued'),
 			$deleteQueued = $el.find('.delete-queued');
-		
+
 		var $deletePending = $el.find('.delete-pending');
-		
+
 		var $image = $el.find('.image-container'),
 			$imagePreview = $image.find('.image-preview.current'),
 			$imageDetails = $image.find('.image-details'),
 			$imageValues = $image.find('.image-values');
-		
+
 		var action = false;
-		
+
 		var imageFieldHTML = '<div class="image-preview new">' +
 				'<div class="img-thumbnail placeholder-wrap"><img class="placeholder' + ( !window.FileReader ? ' no-preview' : '' ) + '" /><div class="ion-upload upload-pending"></div></div></div>'
 			'</div>';
-		
+
 		var removeNewImage = function() {
 			$el.find('.image-preview.new').remove();
 		};
-		
+
 		$upload.change(function(e) {
 			var imageSelected = $(this).val() ? true : false;
 			var renderPlaceholder = function() {
@@ -77,12 +77,12 @@ jQuery(function($) {
 				}
 			}
 		});
-		
+
 		// Upload Image
 		$uploadBtn.click(function() {
 			$upload.click();
 		});
-		
+
 		// Delete/Remove Image
 		$deleteBtn.click(function(e) {
 			e.preventDefault();
@@ -110,7 +110,7 @@ jQuery(function($) {
 			// Redraw
 			$(window).trigger('redraw');
 		});
-		
+
 		// Undo Delete/Remove
 		$undoBtn.click(function(e) {
 			e.preventDefault();
@@ -132,7 +132,7 @@ jQuery(function($) {
 			// Redraw
 			$(window).trigger('redraw');
 		});
-		
+
 		// Cancel Upload
 		$cancelBtn.click(function(e) {
 			e.preventDefault();
@@ -175,7 +175,7 @@ jQuery(function($) {
 			// Redraw
 			$(window).trigger('redraw');
 		});
-		
+
 		// Image popup
 		if ( data.fieldValue ) {
 			$imagePreview.find('a').fancybox({
@@ -185,10 +185,23 @@ jQuery(function($) {
 				helpers: {
 					title: {},
 					buttons: {}
+				},
+				wrapCSS: 'hotspotImage',
+				afterLoad: function() {
+				  if (window.hotspotEnabled == undefined) {
+				  	$('.hotspotImage').hotspot();
+				  }
+
+				  window.hotspotEnabled = true;
+				},
+				beforeClose: function() {
+				  $('.tools').remove();
+
+				  window.hotspotEnabled = false;
 				}
 			});
 		}
-		
+
 	});
-	
+
 });
