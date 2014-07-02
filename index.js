@@ -74,7 +74,7 @@ var Keystone = function() {
 	this.set('ssl cert', process.env.SSL_CERT);
 	
 	this.set('cookie secret', process.env.COOKIE_SECRET);
-	this.set('cookie signin', (this.get('env') == 'development') ? true : false);
+	this.set('cookie signin', (this.get('env') === 'development') ? true : false);
 	
 	this.set('embedly api key', process.env.EMBEDLY_API_KEY || process.env.EMBEDLY_APIKEY);
 	this.set('mandrill api key', process.env.MANDRILL_API_KEY || process.env.MANDRILL_APIKEY);
@@ -100,6 +100,10 @@ var Keystone = function() {
 		this.set('cloudinary config', true);
 	}
 	
+	// Attach core modules
+	this.createItems = require('./lib/core/createItems')(this);
+	
+	// Attach middleware modules
 	this.initAPI = require('./lib/middleware/initAPI')(this);
 	
 };
@@ -496,15 +500,85 @@ Keystone.prototype.mount = function(mountPath, parentApp, events) {
 	}
 	
 	sessionOptions.cookieParser = express.cookieParser(this.get('cookie secret'));
-	
-	if (this.get('session store') == 'mongo') {
-		var MongoStore = require('connect-mongo')(express);
-		sessionOptions.store = new MongoStore({
-			url: this.get('mongo'),
-			collection: 'app_sessions'
-		});
+
+	var sessionStore = this.get('session store');
+
+	if (sessionStore) {
+		
+		var sessionStoreOptions = this.get('session store options') || {};
+
+		// Perform any session store specific configuration or exit on an unsupported session store
+		
+		switch (sessionStore) {
+			
+			case 'mongo':
+				// default session store for using MongoDB
+				sessionStore = 'connect-mongo';
+			case 'connect-mongo':
+				_.defaults(sessionStoreOptions, {
+					collection: 'app_sessions',
+					url: this.get('mongo')
+				});
+				break;
+
+			case 'connect-mongostore':
+				_.defaults(sessionStoreOptions, {
+					collection: 'app_sessions'
+				});
+				if (!sessionStoreOptions.db) {
+					if (throwSessionOptionsError) {
+						console.error(
+							'\nERROR: ' + sessionStore + ' requires `session store options` to be set.' +
+							'\n' +
+							'\nSee http://localhost:8080/docs/configuration#options-database for details.' +
+						'\n');
+						process.exit(1);
+					}
+				}
+				break;
+			
+			case 'redis':
+				// default session store for using Redis
+				sessionStore = 'connect-redis';
+			case 'connect-redis':
+				break;
+
+			default:
+				console.error(
+						'\nERROR: unsupported session store ' + sessionStore + '.' +
+						'\n' +
+						'\nSee http://localhost:8080/docs/configuration#options-database for details.' +
+					'\n');
+				process.exit(1);
+				break;
+		}
+
+		// Initialize the session store
+		try {
+			
+			var _SessionStore = require(sessionStore)(express);
+			sessionOptions.store = new _SessionStore(sessionStoreOptions);
+			
+		} catch(e) {
+			
+			if (e.code == 'MODULE_NOT_FOUND') {
+				
+				// connect-redis must be explicitly installed @1.4.7, so we special-case it here
+				var installName = (sessionStore == 'connect-redis') ? sessionStore + '@1.4.7' : sessionStore;
+				
+				console.error(
+					'\nERROR: ' + sessionStore + ' not found.\n' +
+					'\nPlease install ' + sessionStore + ' from npm to use it as a `session store` option.' +
+					'\nYou can do this by running "npm install ' + installName + ' --save".' +
+				'\n');
+				process.exit(1);
+				
+			} else {
+				throw e;
+			}
+		}
 	}
-	
+
 	// expose initialised session options
 	
 	this.set('session options', sessionOptions);
@@ -553,13 +627,24 @@ Keystone.prototype.mount = function(mountPath, parentApp, events) {
 		_.extend(app.locals, this.get('locals'));
 	}
 	
+	// Indent HTML everywhere, except production
+
 	if (this.get('env') !== 'production') {
-		app.set('view cache', this.get('view cache') === undefined ? true : this.get('view cache'));
 		app.locals.pretty = true;
 	}
 	
-	// Serve static assets
+	// Default view caching logic
+
+	app.set('view cache', this.get('env') === 'production' ? true : false);
 	
+	// Setup view caching from app settings
+
+	if (this.get('view cache') !== undefined) {
+		app.set('view cache', this.get('view cache'));
+	}
+
+	// Serve static assets
+
 	if (this.get('compress')) {
 		app.use(express.compress());
 	}
@@ -569,9 +654,7 @@ Keystone.prototype.mount = function(mountPath, parentApp, events) {
 	}
 	
 	if (this.get('less')) {
-		app.use(require('less-middleware')({
-			src: this.getPath('less')
-		}));
+		app.use(require('less-middleware')(this.getPath('less')));
 	}
 	
 	if (this.get('sass')) {
@@ -592,7 +675,7 @@ Keystone.prototype.mount = function(mountPath, parentApp, events) {
 		app.use(sass.middleware({
 			src: this.getPath('sass'),
 			dest: this.getPath('sass'),
-			outputStyle: (this.get('env') == 'production') ? 'compressed' : 'nested'
+			outputStyle: this.get('env') === 'production' ? 'compressed' : 'nested'
 		}));
 	}
 	
@@ -638,7 +721,11 @@ Keystone.prototype.mount = function(mountPath, parentApp, events) {
 	
 	if (this.get('allowed ip ranges')) {
 		if (!app.get('trust proxy')) {
-			throw new Error("KeystoneJS Initialisaton Error:\n\nto set IP range restrictions the 'trust proxy' setting must be enabled.\n\n");
+			console.log(
+				'KeystoneJS Initialisaton Error:\n\n' +
+				'to set IP range restrictions the "trust proxy" setting must be enabled.\n\n'
+			);
+			process.exit(1);
 		}
 		var ipRangeMiddleware = require('./lib/security/ipRangeRestrict')(
 			this.get('allowed ip ranges'),
@@ -1054,7 +1141,7 @@ Keystone.prototype.start = function(events) {
 
 Keystone.prototype.static = function(app) {
 	
-	app.use('/keystone', require('less-middleware')({ src: __dirname + path.sep + 'public' }));
+	app.use('/keystone', require('less-middleware')(__dirname + path.sep + 'public'));
 	app.use('/keystone', express.static(__dirname + path.sep + 'public'));
 	
 	return this;
@@ -1355,265 +1442,6 @@ Keystone.prototype.getOrphanedLists = function() {
 
 Keystone.prototype.applyUpdates = function(callback) {
 	require('./lib/updates').apply(callback);
-};
-
-
-/**
- * Creates multiple items in one or more Lists
- */
-
-Keystone.prototype.createItems = function(data, ops, callback) {
-	
-	var options = {
-		verbose: false,
-		strict: true
-	};
-	
-	var dashes = '------------------------------------------------';
-	
-	if (!_.isObject(data)) {
-		throw new Error('keystone.createItems() requires a data object as the first argument.');
-	}
-	
-	if (_.isObject(ops)) {
-		_.extend(options, ops);
-	}
-	
-	if (_.isFunction(ops)) {
-		callback = ops;
-	}
-	
-	var lists = _.keys(data),
-		refs = {},
-		stats = {};
-	
-	async.waterfall([
-		
-		// create items
-		function(next) {
-			async.eachSeries(lists, function(key, doneList) {
-				
-				var list = keystone.list(key),
-					relationshipPaths = _.where(list.fields, { type: 'relationship' }).map(function(i) { return i.path; });
-				
-				if (!list) {
-					if (strict) {
-						return doneList({
-							type: 'invalid list',
-							message: 'List key ' + key + ' is invalid.'
-						});
-					}
-					if (options.verbose) {
-						console.log('Skipping invalid list: ' + key);
-					}
-					return doneList();
-				}
-				
-				refs[list.key] = {};
-				stats[list.key] = {
-					singular: list.singular,
-					plural: list.plural,
-					created: 0
-				};
-				
-				var itemsProcessed = 0,
-					totalItems = data[key].length;
-				
-				if (options.verbose) {
-					console.log(dashes);
-					console.log('Processing list: ' + key);
-					console.log('Items to create: ' + totalItems);
-					console.log(dashes);
-				}
-				
-				async.eachSeries(data[key], function(data, doneItem) {
-					
-					itemsProcessed++;
-					
-					// Evaluate function properties to allow generated values (excluding relationships)
-					_.keys(data).forEach(function(i) {
-						if (_.isFunction(data[i]) && relationshipPaths.indexOf(i) === -1) {
-							data[i] = data[i]();
-							if (options.verbose) {
-								console.log('Generated dynamic value for [' + i + ']: ' + data[i]);
-							}
-						}
-					});
-					
-					var doc = data.__doc = new list.model();
-					
-					if (data.__ref) {
-						refs[list.key][data.__ref] = doc;
-					}
-					
-					_.each(list.fields, function(field) {
-						// skip relationship fields on the first pass.
-						field.type !== 'relationship' && field.updateItem(doc, data);
-					});
-					
-					if (options.verbose) {
-						var documentName = list.getDocumentName(doc);
-						console.log('Creating item [' + itemsProcessed + ' of ' + totalItems + '] - ' + documentName);
-					}
-					
-					doc.save(doneItem);
-					stats[list.key].created++;
-					
-				}, doneList);
-				
-			}, next);
-		},
-		
-		// link items
-		function(next) {
-			
-			async.each(lists, function(key, doneList) {
-				
-				var list = keystone.list(key),
-					relationships = _.where(list.fields, { type: 'relationship' });
-				
-				if (!list || !relationships.length) {
-					return doneList();
-				}
-				
-				var itemsProcessed = 0,
-					totalItems = data[key].length;
-				
-				if (options.verbose) {
-					console.log(dashes);
-					console.log('Processing relationships for: ' + key);
-					console.log('Items to process: ' + totalItems);
-					console.log(dashes);
-				}
-				
-				async.each(data[key], function(srcData, doneItem) {
-					
-					var doc = srcData.__doc,
-						relationshipsUpdated = 0;
-					
-					itemsProcessed++;
-					
-					if (options.verbose) {
-						var documentName = list.getDocumentName(doc);
-						console.log('Processing item [' + itemsProcessed + ' of ' + totalItems + '] - ' + documentName);
-					}
-					
-					async.each(relationships, function(field, doneField) {
-						
-						var fieldValue = srcData[field.path],
-							refsLookup = refs[field.refList.key];
-						
-						if (!fieldValue) {
-							return doneField();
-						}
-						
-						// populate relationships from saved refs
-						if (_.isFunction(fieldValue)) {
-							
-							relationshipsUpdated++;
-							
-							var fn = fieldValue,
-								argsRegExp = /^function\s*[^\(]*\(\s*([^\)]*)\)/m,
-								lists = fn.toString().match(argsRegExp)[1].split(',').map(function(i) { return i.trim(); }),
-								args = lists.map(function(i) {
-									return keystone.list(i);
-								}),
-								query = fn.apply(keystone, args);
-							
-							query.exec(function(err, results) {
-								if (field.many) {
-									doc.set(field.path, results || []);
-								} else {
-									doc.set(field.path, (results && results.length) ? results[0] : undefined);
-								}
-								doneField(err);
-							});
-							
-						} else if (_.isArray(fieldValue)) {
-							
-							if (field.many) {
-								
-								var refsArr = _.compact(fieldValue.map(function(ref) {
-									return refsLookup[ref] ? refsLookup[ref].id : undefined;
-								}));
-								
-								if (options.strict && refsArr.length !== fieldValue.length) {
-									return doneField({
-										type: 'invalid ref',
-										srcData: srcData,
-										message: 'Relationship ' + list.key + '.' + field.path + ' contains an invalid reference.'
-									});
-								}
-								
-								relationshipsUpdated++;
-								doc.set(field.path, refsArr);
-								doneField();
-								
-							} else {
-								return doneField({
-									type: 'invalid data',
-									srcData: srcData,
-									message: 'Single-value relationship ' + list.key + '.' + field.path + ' provided as an array.'
-								});
-							}
-							
-						} else if (_.isString(fieldValue)) {
-							
-							var refItem = refsLookup[fieldValue];
-							
-							if (!refItem) {
-								return options.strict ? doneField({
-									type: 'invalid ref',
-									srcData: srcData,
-									message: 'Relationship ' + list.key + '.' + field.path + ' contains an invalid reference: "' + fieldValue + '".'
-								}) : doneField();
-							}
-							
-							relationshipsUpdated++;
-							
-							doc.set(field.path, field.many ? [refItem.id] : refItem.id);
-							
-							doneField();
-							
-						} else {
-							return doneField({
-								type: 'invalid data',
-								srcData: srcData,
-								message: 'Relationship ' + list.key + '.' + field.path + ' contains an invalid data type.'
-							});
-						}
-						
-					}, function(err) {
-						if (err) {
-							return doneItem(err);
-						}
-						if (options.verbose) {
-							console.log('Populated ' + relationshipsUpdated + ' relationship' + (relationshipsUpdated === 1 ? '' : 's') + '.');
-						}
-						if (relationshipsUpdated) {
-							doc.save(doneItem);
-						} else {
-							doneItem();
-						}
-					});
-					
-				}, doneList);
-				
-			}, next);
-		}
-		
-	], function(err) {
-		if (err) return callback && callback(err);
-		
-		var msg = '\nSuccessfully created:\n';
-		_.each(stats, function(list, key) {
-			msg += '\n*   ' + keystone.utils.plural(list.created, '* ' + list.singular, '* ' + list.plural);
-		});
-		stats.message = msg + '\n';
-		
-		callback(null, stats);
-	});
-	
 };
 
 
