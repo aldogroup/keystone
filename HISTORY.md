@@ -1,5 +1,33 @@
 # Keystone
 
+## v0.2.25 / 2014-07-27
+
+* fixed; issue #492 - errors uploading to cloudinary fields, thanks [Johnny Estilles](https://github.com/JohnnyEstilles)
+* fixed; issues starting with SSL
+
+
+## v0.2.24 / 2014-07-25
+
+* fixed; issues saving location field values
+* fixed; filtering on select fields was broken in the Admin UI
+* added; list totals are recalculated after items are deleted, thanks [Johnny Estilles](https://github.com/JohnnyEstilles)
+* added; feature to select images from cloudinary, thanks [Johnny Estilles](https://github.com/JohnnyEstilles)
+* fixed; issues with field required / initial validation, thanks [Oleg Shparber](https://github.com/trollixx)
+* fixed; better handling of default / alt behaviour for remove / delete functionality with cloudinary fields
+
+
+## v0.2.23 / 2014-07-20
+
+* improved; more Admin UI visual tweaks, thanks [Joss Mackison](https://github.com/JossMac)
+* fixed; allowing nested values to be provided to the UpdateHandler for name and location fields
+* added; cloudinary folders feature, enabled with field option `folder` or defaulting to `[prefix (if exists)]/[list path]/[path]`, thanks [Johnny Estilles](https://github.com/JohnnyEstilles)
+* added; ability to specify a field to use as the cloudinary public_id, thanks [Johnny Estilles](https://github.com/JohnnyEstilles)
+* added; cloudinary image replace on upload option, thanks [Johnny Estilles](https://github.com/JohnnyEstilles)
+* fixed; initial sortOrder on a sortable List, thanks [Johnny Estilles](https://github.com/JohnnyEstilles)
+* added; ability to read multiple static files from an Array, thanks [Mike Grabowski](https://github.com/grabbou)
+* added; default values for text fields are displayed in the create items form now, thanks [Brandon Taylor](https://github.com/alsoicode)
+
+
 ## v0.2.22 / 2014-06-29
 
 * fixed; autokey being added with a unique index when not specified as unique, thanks [trentmillar](https://github.com/trentmillar)
@@ -19,7 +47,7 @@ Because of the way **npm** resolved paths, if you are using Keystone in developm
 
 ## v0.2.21 / 2014-06-16
 
-* updated; Admin UI visual tweaks by [jossmackison](https://github.com/JossMackison)
+* updated; Admin UI visual tweaks by [Joss Mackison](https://github.com/JossMac)
 * added; new CSRF implementation for more granular control
 * fixed; several UI and functionality issues with the new list recent-searches feature
 * added; S3 file - ability to specify a protocol for the file url, thanks [Cosmina](https://github.com/cosmina)
