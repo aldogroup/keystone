@@ -17,5 +17,6 @@ exports = module.exports = function(req, res) {
         throw new Error("Mongo Error");
       }
   });
+  config.current_locale = req.params.locale;
   res.redirect(req.headers.referer);
 };

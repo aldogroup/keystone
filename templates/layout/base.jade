@@ -40,7 +40,10 @@ html
 						each locale in config.locales
 							each val, key in config.language_map
 								if locale == key
-									li: a(href='/keystone/locale/' + locale) #{val}
+									if locale == config.current_locale
+										li(class='active'): a(href='/keystone/locale/' + locale) #{val}
+									else
+										li: a(href='/keystone/locale/' + locale) #{val}
 						if signout
 							li.divider
 							li: a(href=signout).signout Sign Out
