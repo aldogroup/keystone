@@ -4,6 +4,7 @@ include ../mixins/columns
 
 block css
 	link(rel="stylesheet", href="/keystone/js/lib/fancybox/jquery.fancybox.css")
+	link(rel="stylesheet", href="/keystone/js/lib/hotspot/hotspot.css")
 	if list.fieldTypes.markdown
 		link(rel="stylesheet", href="/keystone/js/lib/bootstrap-markdown/css/bootstrap-markdown.css")
 	if list.fieldTypes.code
@@ -14,12 +15,15 @@ block js
 	script(src="/keystone/js/lib/joseph-myers/md5.js")
 	script(src="/keystone/js/lib/fancybox/jquery.fancybox.pack.js")
 	script(src="/keystone/js/lib/html5sortable/jquery.sortable.js")
+
 	if list.fieldTypes.location
 		script(src="/keystone/js/common/ui-location.js")
 	if list.fieldTypes.cloudinaryimage
 		script(src="/keystone/js/common/ui-cloudinaryimage.js")
+		script(src="/keystone/js/lib/hotspot/hotspot.js")
 	if list.fieldTypes.cloudinaryimages
 		script(src="/keystone/js/common/ui-cloudinaryimages.js")
+		script(src="/keystone/js/lib/hotspot/hotspot.js")
 	if list.fieldTypes.s3file
 		script(src="/keystone/js/common/ui-s3file.js")
 	if list.fieldTypes.azurefile
