@@ -10,7 +10,9 @@ var fs = require('fs'),
 	numeral = require('numeral'),
 	cloudinary = require('cloudinary'),
 	mandrillapi = require('mandrill-api'),
-	utils = require('keystone-utils');
+	utils = require('keystone-utils'),
+	config = require('config'),
+	RSVP = require('rsvp');
 
 var templateCache = {};
 
@@ -221,6 +223,80 @@ Keystone.prototype.import = function(dirname) {
 	return doImport(initialPath);
 };
 
+/*Keystone.prototype.constructor = function() {
+	var promise = new RSVP.Promise(function(resolve, reject) {
+		var data = {};
+
+		async.forEach(Object.keys(keystone.lists), function(key, callback) {
+			var list = keystone.lists[key];
+
+			list.model.find({}, {''})data[page] = {};
+			callback();
+		}, function(err) {
+			if (err) {
+				reject(err);
+			} else {
+				data.config = config;
+				keystone.data = data;
+				resolve(keystone.data);
+			}
+		});
+	});
+	return promise;
+};*/
+
+Keystone.prototype.fetch = function() {
+	var data = {} || keystone.data;
+
+  	var promise = new RSVP.Promise(function(resolve, reject) {
+  		async.forEach(Object.keys(keystone.lists), function(key, callback) {
+	    	var list = keystone.lists[key];
+
+	    	list.model.find()
+	      		.populate('page brand')
+	      		.exec(function(err, res) {
+	      			async.each(res, function(_res, _callback) {
+	      				if (_res.page) {
+	      					var _key = _res.page.key;
+
+							if (!_.has(data, _key)) {
+	      						data[_key] = {};
+	      					}
+
+	      					if (!_.has(data, _key[key])) {
+	      						data[_key][key] = [];
+	      					}
+
+	      					data[_key][key].push(_res);
+	      				} else {
+							if (!_.has(data, key)) {
+	      						data[key] = [];
+	      						data[key].push(_res);
+	      					}
+	      				}
+	      				_callback();
+	      			}, function() {
+	      				callback();
+	      			});
+	      		});
+	  	}, function(err) {
+  			if (err) {
+  				reject(err);
+  			} else {
+  				resolve(data);
+  			}
+
+    		fs.writeFile('./data/data.json', JSON.stringify(data, undefined, 2), function(err) {
+      			if (err) {
+        			console.log(err);
+      			} else {
+        			console.log('Module data saved to data.json');
+        		}
+      		});
+	    });
+  	});
+  	return promise;
+};
 
 /**
  * Applies Application updates
@@ -270,7 +346,7 @@ Keystone.prototype.render = function(req, res, view, ext) {
 	};
 
 	var locals = {
-		config: require('config'),
+		config: config,
 		_: _,
 		moment: moment,
 		numeral: numeral,
