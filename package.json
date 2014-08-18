@@ -28,7 +28,8 @@
     "queryfilter": "~0.0.4",
     "range_check": "~0.0.4",
     "semver": "~3.0.1",
-    "underscore": "~1.6.0"
+    "underscore": "~1.6.0",
+    "rsvp": "3.0.13"
   },
   "devDependencies": {
     "browserify": "^5.9.1",
