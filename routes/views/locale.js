@@ -2,7 +2,7 @@ var keystone = require('../../'),
     config = require('config');
 
 exports = module.exports = function(req, res) {
-  config.keystone.mongo = 'mongodb://localhost/keystone_' + req.params.locale;
+  config.keystone.mongo = config.mongo_url + '/keystone_' + req.params.locale;
 
   keystone.init(config.keystone);
   keystone.httpServer.close();
