@@ -1,7 +1,5 @@
 var fs = require('fs'),
 	path = require('path'),
-	http = require('http'),
-	https = require('https'),
 	_ = require('underscore'),
 	express = require('express'),
 	async = require('async'),
@@ -9,12 +7,11 @@ var fs = require('fs'),
 	moment = require('moment'),
 	numeral = require('numeral'),
 	cloudinary = require('cloudinary'),
-	mandrillapi = require('mandrill-api'),
-	utils = require('keystone-utils');
+	utils = require('keystone-utils'),
+	config = require('config'),
+	RSVP = require('rsvp');
 
 var templateCache = {};
-
-var dashes = '\n------------------------------------------------\n';
 
 /**
  * Don't use process.cwd() as it breaks module encapsulation
@@ -171,7 +168,7 @@ keystone.Field.Types = require('./lib/fieldTypes');
 keystone.View = require('./lib/view');
 keystone.Email = require('./lib/email');
 
-var security = keystone.security = {
+keystone.security = {
 	csrf: require('./lib/security/csrf')
 };
 
@@ -221,6 +218,67 @@ Keystone.prototype.import = function(dirname) {
 	return doImport(initialPath);
 };
 
+Keystone.prototype.fetch = function() {
+	var data = {} || keystone.data;
+
+  	var promise = new RSVP.Promise(function(resolve, reject) {
+  		async.forEach(Object.keys(keystone.lists), function(key, callback) {
+	    	var list = keystone.lists[key];
+	    	var rels = [];
+
+	    	async.forEach(Object.keys(list.fields),function(key, _callback) {
+	    		var type = list.fields[key].type
+
+	    		if (type == 'relationship') {
+	    			rels.push(key);
+	    		}
+	    		_callback();
+	    	}, function() {
+		    	list.model.find()
+		      		.populate(rels)
+		      		.exec(function(err, res) {
+		      			async.each(res, function(_res, __callback) {
+		      				if (_res.page) {
+		      					var _key = _res.page.key;
+
+								if (!_.has(data, _key)) {
+		      						data[_key] = {};
+		      					}
+
+		      					if (!_.has(data[_key], key)) {
+		      						data[_key][key] = [];
+		      					}
+		      					data[_key][key].push(_res);
+		      				} else {
+								if (!_.has(data, key)) {
+		      						data[key] = [];
+		      					}
+		      					data[key].push(_res);
+		      				}
+		      				__callback();
+		      			}, function() {
+		      				callback();
+		      			});
+		      		});
+		      });
+	  	}, function(err) {
+  			if (err) {
+  				reject(err);
+  			} else {
+  				resolve(data);
+  			}
+
+    		fs.writeFile('./data/data.json', JSON.stringify(data, undefined, 2), function(err) {
+      			if (err) {
+        			console.log(err);
+      			} else {
+        			console.log('Module data saved to data.json');
+        		}
+      		});
+	    });
+  	});
+  	return promise;
+};
 
 /**
  * Applies Application updates
@@ -270,7 +328,7 @@ Keystone.prototype.render = function(req, res, view, ext) {
 	};
 
 	var locals = {
-		config: require('config'),
+		config: config,
 		_: _,
 		moment: moment,
 		numeral: numeral,
@@ -297,7 +355,9 @@ Keystone.prototype.render = function(req, res, view, ext) {
 		wysiwygOptions: {
 			enableImages: keystone.get('wysiwyg images') ? true : false,
 			enableCloudinaryUploads: keystone.get('wysiwyg cloudinary images') ? true : false,
-			additionalButtons: keystone.get('wysiwyg additional buttons') || ''
+			additionalButtons: keystone.get('wysiwyg additional buttons') || '',
+			additionalPlugins: keystone.get('wysiwyg additional plugins') || '',
+			additionalOptions: keystone.get('wysiwyg additional options') || {}
 		}
 	};
 

@@ -35,7 +35,9 @@ The primary contributors to Keystone are based in Sydney, Australia and Keystone
 
 The [SydJS Website](http://www.sydjs.com) is a great example of a more sophisticated project than the Keystone Demo, and you can [view the source code](https://github.com/JedWatson/sydjs-site) to see how it was built.
 
-If you run a community group, please feel free to copy our site and make it your own! And if you do, we'd love to hear from you.
+We have also written a [SydJS Mobile App](https://github.com/bladey/sydjs-app) with Cordova, Backbone, Velocity.js and jQuery to demonstrate how Javascript can be used to create a native experience for mobile apps, running against a KeystoneJS back-end. For more, including our design resources, check out the [SydJS Showbag](http://www.sydjs.com/showbag).
+
+If you run a community group, please feel free to copy our site and app and make them your own! And if you do, we'd love to hear from you.
 
 
 ### Contributing
@@ -176,7 +178,7 @@ relationships between different models.
 ### Running KeystoneJS in Production
 
 When you deploy your KeystoneJS app to production, be sure to set your `ENV` environment variable to `production`.
-You can do this by setting `NODE_ENV=production` in your `.env` file, which gets handled by [dotenv](http://https://github.com/scottmotte/dotenv).
+You can do this by setting `NODE_ENV=production` in your `.env` file, which gets handled by [dotenv](https://github.com/scottmotte/dotenv).
 
 Setting your environment enables certain features, including template caching, simpler error reporting and html minification, that are important in production but annoying in development.
 
