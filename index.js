@@ -236,6 +236,7 @@ Keystone.prototype.fetch = function() {
 	    	}, function() {
 		    	list.model.find()
 		      		.populate(rels)
+		      		.sort('order _order')
 		      		.exec(function(err, res) {
 		      			async.each(res, function(_res, __callback) {
 		      				if (_res.page) {
