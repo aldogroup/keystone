@@ -4,7 +4,6 @@ var keystone = require('../../'),
 
 exports = module.exports = function(req, res) {
   config.current_locale = req.params.locale;
-  config.keystone.mongo = config.mongo_url + '/keystone_' + config.current_locale;
 
   keystone.init(config.keystone);
   keystone.httpServer.close();
