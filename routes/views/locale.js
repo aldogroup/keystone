@@ -9,7 +9,7 @@ exports = module.exports = function(req, res) {
   keystone.httpServer.close();
 
   keystone.mongoose.connection.close();
-  keystone.mongoose.connect(config.keystone.mongo);
+  keystone.mongoose.connect(process.env.MONGO_URI + '/keystone_' + config.current_locale || exports.mongo_url + '/keystone_' + config.current_locale);
   keystone.mongoose.connection.on('error', function(err) {
     if (keystone.get('logger')) {
       console.log('------------------------------------------------');
