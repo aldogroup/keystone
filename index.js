@@ -234,39 +234,33 @@ Keystone.prototype.fetch = function() {
 	    		}
 	    		_callback();
 	    	}, function() {
-	    		async.each(config.locales, function(locale, __callback) {
-	    			data[locale] = {};
+		    	list.model[config.current_locale].find()
+		      		.populate(rels)
+		      		.sort('order _order module')
+		      		.exec(function(err, res) {
+		      			async.each(res, function(_res, __callback) {
+		      				if (_res.page) {
+		      					var _key = _res.page.key;
 
-			    	list.model[locale].find()
-			      		.populate(rels)
-			      		.sort('order _order')
-			      		.exec(function(err, res) {
-			      			async.each(res, function(_res, ___callback) {
-			      				if (_res.page) {
-			      					var _key = _res.page.key;
+								if (!_.has(data, _key)) {
+		      						data[_key] = {};
+		      					}
 
-									if (!_.has(data, _key)) {
-			      						data[locale][_key] = {};
-			      					}
-
-			      					if (!_.has(data[_key], key)) {
-			      						data[locale][_key][key] = [];
-			      					}
-			      					data[locale][_key][key].push(_res);
-			      				} else {
-									if (!_.has(data[locale], key)) {
-			      						data[locale][key] = [];
-			      					}
-			      					data[locale][key].push(_res);
-			      				}
-			      				___callback();
-			      			}, function() {
-			      				__callback();
-			      			});
-			      		});
-	    		}, function() {
-	    			callback();
-	    		});
+		      					if (!_.has(data[_key], key)) {
+		      						data[_key][key] = [];
+		      					}
+		      					data[_key][key].push(_res);
+		      				} else {
+								if (!_.has(data, key)) {
+		      						data[key] = [];
+		      					}
+		      					data[key].push(_res);
+		      				}
+		      				__callback();
+		      			}, function() {
+		      				callback();
+		      			});
+		      		});
 		      });
 	  	}, function(err) {
   			if (err) {
@@ -275,13 +269,25 @@ Keystone.prototype.fetch = function() {
   				resolve(data);
   			}
 
-    		fs.writeFile('./data/data.json', JSON.stringify(data, undefined, 2), function(err) {
-      			if (err) {
-        			console.log(err);
-      			} else {
-        			console.log('Module data saved to data.json');
-        		}
-      		});
+  			if (config.json.auto == true) {
+  				if (config.json.pretty == true) {
+	    			fs.writeFile('./data/data.json', JSON.stringify(data, undefined, 2), function(err) {
+		      			if (err) {
+		        			console.log(err);
+		      			} else {
+		        			console.log('Model data saved and prettified to data.json');
+		        		}
+		        	});
+		        } else {
+	    			fs.writeFile('./data/data.json', JSON.stringify(data), function(err) {
+		      			if (err) {
+		        			console.log(err);
+		      			} else {
+		        			console.log('Model data saved to data.json');
+		        		}
+	      			});
+	      		}
+	      	}
 	    });
   	});
   	return promise;

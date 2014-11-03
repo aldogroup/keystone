@@ -1,10 +1,13 @@
 var keystone = require('../../'),
 	_ = require('underscore'),
-	async = require('async');
+	async = require('async'),
+	config = require('config');
 
 exports = module.exports = function(req, res) {
 	
-	req.list.model.findById(req.params.item).exec(function(err, item) {
+	var locale = req.session.current_locale ? req.session.current_locale : config.current_locale;
+
+	req.list.model[locale].findById(req.params.item).exec(function(err, item) {
 		
 		if (!item) {
 			req.flash('error', 'Item ' + req.params.item + ' could not be found.');
@@ -151,7 +154,8 @@ exports = module.exports = function(req, res) {
 					item: item,
 					relationships: relationships,
 					showRelationships: showRelationships,
-					drilldown: drilldown
+					drilldown: drilldown,
+					current_locale: locale
 				}));
 				
 			});

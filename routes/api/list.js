@@ -1,9 +1,11 @@
 var _ = require('underscore'),
 	async = require('async'),
 	keystone = require('../../'),
-	jade = require('jade');
+	jade = require('jade'),
+	config = require('config');
 
 exports = module.exports = function(req, res) {
+	var locale = req.session.current_locale ? req.session.current_locale : config.current_locale;
 
 	var sendResponse = function(status) {
 		res.json(status);
@@ -31,8 +33,8 @@ exports = module.exports = function(req, res) {
 
 			var filters = req.list.getSearchFilters(req.query.q);
 
-			var count = req.list.model.count(filters),
-				query = req.list.model.find(filters)
+			var count = req.list.model[locale].count(filters),
+				query = req.list.model[locale].find(filters)
 					.limit(limit)
 					.skip(skip)
 					.sort(req.list.defaultSort);
@@ -90,7 +92,7 @@ exports = module.exports = function(req, res) {
 
 		case 'get':
 
-			req.list.model.findById(req.query.id).exec(function(err, item) {
+			req.list.model[locale].findById(req.query.id).exec(function(err, item) {
 
 				if (err) return sendError('database error', err);
 				if (!item) return sendResponse({ name: req.query.id, id: req.query.id });
@@ -123,7 +125,7 @@ exports = module.exports = function(req, res) {
 
 			_.each(order, function(id, i) {
 				queue.push(function(done) {
-					req.list.model.update({ _id: id }, { $set: { sortOrder: i }}, done);
+					req.list.model[locale].update({ _id: id }, { $set: { sortOrder: i }}, done);
 				});
 			});
 
@@ -194,7 +196,7 @@ exports = module.exports = function(req, res) {
 				return sendError('You can not delete yourself');
 			}
 			
-			req.list.model.findById(id).exec(function (err, item) {
+			req.list.model[locale].findById(id).exec(function (err, item) {
 
 				if (err) return sendError('database error', err);
 				if (!item) return sendError('not found');
@@ -237,7 +239,7 @@ exports = module.exports = function(req, res) {
 						return '/keystone/' + req.list.path + (p ? '/' + p : '') + (params ? '?' + params : '');
 					};
 
-				var query = req.list.model.find(queryFilters).sort(req.query.sort).skip(skip).limit(1),
+				var query = req.list.model[locale].find(queryFilters).sort(req.query.sort).skip(skip).limit(1),
 					columns = req.list.expandColumns(req.query.cols);
 
 				req.list.selectColumns(query, columns);

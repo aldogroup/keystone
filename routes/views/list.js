@@ -113,6 +113,8 @@ exports = module.exports = function(req, res) {
 			var compileFields = function(item, callback) { item.compile('initial', callback); };
 			
 			async.eachSeries(req.list.initialFields, compileFields , function() {
+
+				var locale = req.session.current_locale ? req.session.current_locale : config.current_locale;
 				
 				keystone.render(req, res, 'list', _.extend(viewLocals, {
 					section: keystone.nav.by.list[req.list.key] || {},
@@ -128,7 +130,8 @@ exports = module.exports = function(req, res) {
 					colPaths: _.pluck(columns, 'path'),
 					items: items,
 					submitted: req.body || {},
-					query: req.query
+					query: req.query,
+					current_locale: locale
 				}));
 				
 			});
