@@ -3,22 +3,8 @@ var keystone = require('../../'),
     async = require('async');
 
 exports = module.exports = function(req, res) {
-  config.current_locale = req.params.locale;
   req.session.current_locale = req.params.locale;
-
-  /*keystone.init(config.keystone);
-  keystone.httpServer.close();
-
-  keystone.mongoose.connection.close();
-  keystone.mongoose.connect(process.env.MONGO_URI + '/keystone_' + config.current_locale || exports.mongo_url + '/keystone_' + config.current_locale);
-  keystone.mongoose.connection.on('error', function(err) {
-    if (keystone.get('logger')) {
-      console.log('------------------------------------------------');
-      console.log('Mongo Error:\n');
-      console.log(err);
-        throw new Error("Mongo Error");
-      }
-  });*/
+  config.current_locale = req.session.current_locale;
 
   async.forEach(Object.keys(keystone.lists), function (key, callback) {
     var list = keystone.lists[key];

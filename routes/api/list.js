@@ -240,7 +240,7 @@ exports = module.exports = function(req, res) {
 					};
 
 				var query = req.list.model[locale].find(queryFilters).sort(req.query.sort).skip(skip).limit(1),
-					columns = req.list.expandColumns(req.query.cols);
+					columns = req.list.expandColumns(req.query.cols, locale);
 
 				req.list.selectColumns(query, columns);
 

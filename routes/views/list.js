@@ -5,6 +5,8 @@ var keystone = require('../../'),
 	config = require('config');
 
 exports = module.exports = function(req, res) {
+
+	var locale = req.session.current_locale ? req.session.current_locale : config.current_locale;
 	
 	var viewLocals = {
 		validationErrors: {},
@@ -15,7 +17,7 @@ exports = module.exports = function(req, res) {
 		filters = req.list.processFilters(req.query.q),
 		cleanFilters = {},
 		queryFilters = req.list.getSearchFilters(req.query.search, filters),
-		columns = (req.query.cols) ? req.list.expandColumns(req.query.cols) : req.list.defaultColumns;
+		columns = (req.query.cols) ? req.list.expandColumns(req.query.cols, locale) : req.list.defaultColumns;
 	
 	_.each(filters, function(filter, path) {
 		cleanFilters[path] = _.omit(filter, 'field');
@@ -57,7 +59,7 @@ exports = module.exports = function(req, res) {
 	
 	var renderView = function() {
 		
-		var query = req.list.paginate({ filters: queryFilters, page: req.params.page, perPage: req.list.get('perPage') }).sort(sort.by);
+		var query = req.list.paginate({ filters: queryFilters, page: req.params.page, perPage: req.list.get('perPage'), locale: locale }).sort(sort.by);
 		
 		req.list.selectColumns(query, columns);
 		
@@ -114,8 +116,6 @@ exports = module.exports = function(req, res) {
 			var compileFields = function(item, callback) { item.compile('initial', callback); };
 			
 			async.eachSeries(req.list.initialFields, compileFields , function() {
-
-				var locale = req.session.current_locale ? req.session.current_locale : config.current_locale;
 				
 				keystone.render(req, res, 'list', _.extend(viewLocals, {
 					section: keystone.nav.by.list[req.list.key] || {},
