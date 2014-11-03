@@ -146,6 +146,7 @@ exports = module.exports = function(req, res) {
 					return rel.items.results.length;
 				});
 				
+				console.log(req.session.current_locale);
 				keystone.render(req, res, 'item', _.extend(viewLocals, {
 					section: keystone.nav.by.list[req.list.key] || {},
 					title: 'Keystone: ' + req.list.singular + ': ' + req.list.getDocumentName(item),
