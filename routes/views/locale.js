@@ -3,8 +3,9 @@ var keystone = require('../../'),
     async = require('async');
 
 exports = module.exports = function(req, res) {
-  req.session.current_locale = req.params.locale;
-  config.current_locale = req.session.current_locale;
+  var locale = req.params.locale;
+
+  req.session.current_locale = locale;
 
   async.forEach(Object.keys(keystone.lists), function (key, callback) {
     var list = keystone.lists[key];
@@ -13,7 +14,7 @@ exports = module.exports = function(req, res) {
       var field = list.fields[key];
 
       if (field.type == 'money') {
-        var currency = config.currencies[req.session.current_locale];
+        var currency = config.currencies[locale];
 
         field._formatString = (field.options.format === false) ? false : (field.options.format || currency);
       }
