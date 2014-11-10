@@ -271,19 +271,19 @@ Keystone.prototype.fetch = function() {
 
   			if (config.json.auto == true) {
   				if (config.json.pretty == true) {
-	    			fs.writeFile('./data/data.json', JSON.stringify(data, undefined, 2), function(err) {
+	    			fs.writeFile('./data/data_' + config.current_locale +'.json', JSON.stringify(data, undefined, 2), function(err) {
 		      			if (err) {
 		        			console.log(err);
 		      			} else {
-		        			console.log('Model data saved and prettified to data.json');
+		        			console.log('Model data for locale ' + config.current_locale + ' saved and prettified to data.json');
 		        		}
 		        	});
 		        } else {
-	    			fs.writeFile('./data/data.json', JSON.stringify(data), function(err) {
+	    			fs.writeFile('./data/data_' + config.current_locale + '.json', JSON.stringify(data), function(err) {
 		      			if (err) {
 		        			console.log(err);
 		      			} else {
-		        			console.log('Model data saved to data.json');
+		        			console.log('Model data for locale ' + config.current_locale + ' saved to data.json');
 		        		}
 	      			});
 	      		}
