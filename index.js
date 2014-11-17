@@ -220,6 +220,7 @@ Keystone.prototype.import = function(dirname) {
 
 Keystone.prototype.fetch = function() {
 	var data = {} || keystone.data;
+	var locale = process.env.CURRENT_LOCALE || config.default_locale;
 
   	var promise = new RSVP.Promise(function(resolve, reject) {
   		async.forEach(Object.keys(keystone.lists), function(key, callback) {
@@ -234,7 +235,7 @@ Keystone.prototype.fetch = function() {
 	    		}
 	    		_callback();
 	    	}, function() {
-		    	list.model[config.current_locale].find()
+		    	list.model[locale].find()
 		      		.populate(rels)
 		      		.sort('order _order module')
 		      		.exec(function(err, res) {
@@ -271,19 +272,19 @@ Keystone.prototype.fetch = function() {
 
   			if (config.json.auto == true) {
   				if (config.json.pretty == true) {
-	    			fs.writeFile('./data/data_' + config.current_locale +'.json', JSON.stringify(data, undefined, 2), function(err) {
+	    			fs.writeFile('./data/data_' + locale +'.json', JSON.stringify(data, undefined, 2), function(err) {
 		      			if (err) {
 		        			console.log(err);
 		      			} else {
-		        			console.log('Model data for locale ' + config.current_locale + ' saved and prettified to data.json');
+		        			console.log('Model data for locale ' + locale + ' saved and prettified to data.json');
 		        		}
 		        	});
 		        } else {
-	    			fs.writeFile('./data/data_' + config.current_locale + '.json', JSON.stringify(data), function(err) {
+	    			fs.writeFile('./data/data_' + locale + '.json', JSON.stringify(data), function(err) {
 		      			if (err) {
 		        			console.log(err);
 		      			} else {
-		        			console.log('Model data for locale ' + config.current_locale + ' saved to data.json');
+		        			console.log('Model data for locale ' + locale + ' saved to data.json');
 		        		}
 	      			});
 	      		}
