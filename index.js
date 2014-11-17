@@ -276,7 +276,7 @@ Keystone.prototype.fetch = function() {
 		      			if (err) {
 		        			console.log(err);
 		      			} else {
-		        			console.log('Model data for locale ' + locale + ' saved and prettified to data.json');
+		        			console.log('Model data for locale ' + locale + ' saved and prettified to data_' + locale + '.json');
 		        		}
 		        	});
 		        } else {
@@ -284,7 +284,7 @@ Keystone.prototype.fetch = function() {
 		      			if (err) {
 		        			console.log(err);
 		      			} else {
-		        			console.log('Model data for locale ' + locale + ' saved to data.json');
+		        			console.log('Model data for locale ' + locale + ' saved to data_' + locale + '.json');
 		        		}
 	      			});
 	      		}

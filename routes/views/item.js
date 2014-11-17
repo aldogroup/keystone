@@ -5,7 +5,7 @@ var keystone = require('../../'),
 
 exports = module.exports = function(req, res) {
 	
-	var locale = req.session.current_locale ? req.session.current_locale : config.current_locale;
+	var locale = req.session.current_locale || config.default_locale;
 
 	req.list.model[locale].findById(req.params.item).exec(function(err, item) {
 		

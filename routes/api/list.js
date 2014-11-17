@@ -5,7 +5,7 @@ var _ = require('underscore'),
 	config = require('config');
 
 exports = module.exports = function(req, res) {
-	var locale = req.session.current_locale ? req.session.current_locale : config.current_locale;
+	var locale = req.session.current_locale || config.default_locale;
 
 	var sendResponse = function(status) {
 		res.json(status);
