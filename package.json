@@ -29,8 +29,9 @@
     "numeral": "~1.5.3",
     "queryfilter": "~0.0.4",
     "range_check": "~0.0.4",
-    "semver": "~3.0.1",
+    "semver": "~4.1.0",
     "underscore": "~1.7.0",
+    "scmp": "~1.0.0",
     "rsvp": "3.0.13"
   },
   "devDependencies": {

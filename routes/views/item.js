@@ -4,10 +4,19 @@ var keystone = require('../../'),
 	config = require('config');
 
 exports = module.exports = function(req, res) {
-	
-	var locale = req.session.current_locale || config.default_locale;
 
-	req.list.model[locale].findById(req.params.item).exec(function(err, item) {
+	var locale = req.session.current_locale || config.default_locale;
+	var itemQuery = req.list.model[locale].findById(req.params.item);
+	
+	if (req.list.tracking && req.list.tracking.createdBy) {
+		itemQuery.populate(req.list.tracking.createdBy);
+	}
+	
+	if (req.list.tracking && req.list.tracking.updatedBy) {
+		itemQuery.populate(req.list.tracking.updatedBy);
+	}
+	
+	itemQuery.exec(function(err, item) {
 		
 		if (!item) {
 			req.flash('error', 'Item ' + req.params.item + ' could not be found.');
@@ -146,7 +155,6 @@ exports = module.exports = function(req, res) {
 					return rel.items.results.length;
 				});
 				
-				console.log(req.session.current_locale);
 				keystone.render(req, res, 'item', _.extend(viewLocals, {
 					section: keystone.nav.by.list[req.list.key] || {},
 					title: 'Keystone: ' + req.list.singular + ': ' + req.list.getDocumentName(item),
