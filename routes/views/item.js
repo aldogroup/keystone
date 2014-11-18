@@ -1,6 +1,7 @@
 var keystone = require('../../'),
 	_ = require('underscore'),
-	async = require('async');
+	async = require('async'),
+	config = require('config');
 
 exports = module.exports = function(req, res) {
 
