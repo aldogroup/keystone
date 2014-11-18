@@ -7,6 +7,7 @@ var keystone = require('../../'),
 var FN_ARGS = /^function\s*[^\(]*\(\s*([^\)]*)\)/m;
 
 exports = module.exports = function(req, res) {
+	var locale = req.session.current_locale || config.default_locale;
 
 	var filters = req.list.processFilters(req.query.q),
 		queryFilters = req.list.getSearchFilters(req.query.search, filters);
@@ -60,7 +61,7 @@ exports = module.exports = function(req, res) {
 
 	};
 
-	var query = req.list.model.find(queryFilters);
+	var query = req.list.model[locale].find(queryFilters);
 	if (relFields) {
 		query.populate(relFields.join(' '));
 	}

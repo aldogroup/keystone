@@ -1,9 +1,12 @@
 var keystone = require('../../'),
 	_ = require('underscore'),
 	querystring = require('querystring'),
-	async = require('async');
+	async = require('async'),
+	config = require('config');
 
 exports = module.exports = function(req, res) {
+
+	var locale = req.session.current_locale || config.default_locale;
 	
 	var viewLocals = {
 		validationErrors: {},
@@ -180,7 +183,7 @@ exports = module.exports = function(req, res) {
 			return renderView();
 		}
 		
-		req.list.model.findById(req.query['delete']).exec(function (err, item) {
+		req.list.model[locale].findById(req.query['delete']).exec(function (err, item) {
 			if (err || !item) return res.redirect('/keystone/' + req.list.path);
 			
 			item.remove(function (err) {

@@ -3,8 +3,9 @@ var keystone = require('../../'),
 	async = require('async');
 
 exports = module.exports = function(req, res) {
-	
-	var itemQuery = req.list.model.findById(req.params.item);
+
+	var locale = req.session.current_locale || config.default_locale;
+	var itemQuery = req.list.model[locale].findById(req.params.item);
 	
 	if (req.list.tracking && req.list.tracking.createdBy) {
 		itemQuery.populate(req.list.tracking.createdBy);
