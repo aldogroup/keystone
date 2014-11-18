@@ -59,7 +59,7 @@ exports = module.exports = function(req, res) {
 	
 	var renderView = function() {
 		
-		var query = req.list.paginate({ filters: queryFilters, page: req.params.page, perPage: req.list.get('perPage') }).sort(sort.by);
+		var query = req.list.paginate({ filters: queryFilters, page: req.params.page, perPage: req.list.get('perPage'), locale: locale }).sort(sort.by);
 		
 		req.list.selectColumns(query, columns);
 		
