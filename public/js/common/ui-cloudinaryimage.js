@@ -1,39 +1,39 @@
 jQuery(function($) {
 	var supportedTypes = ['image/gif', 'image/png', 'image/jpeg', 'image/bmp', 'image/x-icon', 'application/pdf', 'image/x-tiff', 'image/x-tiff', 'application/postscript', 'image/vnd.adobe.photoshop'];
-
+	
 	// Cloudinary Image
 	$('.field.type-cloudinaryimage').each(function() {
-
+	
 		var $el = $(this),
 			data = $el.data();
-
+		
 		var $action = $el.find('.field-action'),
 			$upload = $el.find('.field-upload');
-
+		
 		var $uploadBtn = $el.find('.btn-upload-image'),
 			$deleteBtn = $el.find('.btn-delete-image'),
 			$cancelBtn = $el.find('.btn-cancel-image'),
 			$undoBtn = $el.find('.btn-undo-image');
-
+			
 		var $uploadQueued = $el.find('.upload-queued'),
 			$deleteQueued = $el.find('.delete-queued'),
 			$selectQueued = $el.find('.select-queued');
-
+		
 		var $deletePending = $el.find('.delete-pending');
-
+		
 		var $image = $el.find('.image-container'),
 			$imagePreview = $image.find('.image-preview.current'),
 			$imageDetails = $image.find('.image-details'),
 			$imageValues = $image.find('.image-values');
 
 		var $select2Input = $el.find('.ui-select2-cloudinary');
-
+		
 		var action = false;
-
+		
 		var imageFieldHTML = '<div class="image-preview new">' +
 				'<div class="img-thumbnail placeholder-wrap"><img class="placeholder' + ( !window.FileReader ? ' no-preview' : '' ) + '" /><div class="ion-upload upload-pending"></div></div></div>'
 			'</div>';
-
+		
 		var removeNewImage = function() {
 			$el.find('.image-preview.new').remove();
 		};
@@ -76,9 +76,9 @@ jQuery(function($) {
 				}
 				// Make sure upload button references no current image
 				$uploadBtn.html('Upload Image');
-			}
+			}			
 		};
-
+		
 		$upload.change(function(e) {
 			var imageSelected = $(this).val() ? true : false;
 			var renderPlaceholder = function() {
@@ -123,12 +123,12 @@ jQuery(function($) {
 				}
 			}
 		});
-
+		
 		// Upload Image
 		$uploadBtn.click(function() {
 			$upload.click();
 		});
-
+		
 		// Delete/Remove Image
 		$deleteBtn.click(function(e) {
 			e.preventDefault();
@@ -156,7 +156,7 @@ jQuery(function($) {
 			// Redraw
 			$(window).trigger('redraw');
 		});
-
+		
 		// Undo Delete/Remove
 		$undoBtn.click(function(e) {
 			e.preventDefault();
@@ -178,7 +178,7 @@ jQuery(function($) {
 			// Redraw
 			$(window).trigger('redraw');
 		});
-
+		
 		// Cancel Upload
 		$cancelBtn.click(function(e) {
 			e.preventDefault();
@@ -195,7 +195,7 @@ jQuery(function($) {
 			// Redraw
 			$(window).trigger('redraw');
 		});
-
+		
 		// Image popup
 		if ( data.fieldValue ) {
 			$imagePreview.find('a').fancybox({
@@ -205,25 +205,12 @@ jQuery(function($) {
 				helpers: {
 					title: {},
 					buttons: {}
-				},
-				wrapCSS: 'hotspotImage',
-				afterLoad: function() {
-				  if (window.hotspotEnabled == undefined) {
-				  	$('.hotspotImage').hotspot();
-				  }
-
-				  window.hotspotEnabled = true;
-				},
-				beforeClose: function() {
-				  $('.tools').remove();
-
-				  window.hotspotEnabled = false;
 				}
 			});
 		}
 
 		$select2Input.each(function(i, el) {
-
+			
 			el = $(el), query = '';
 
 			var perPage = 10,
@@ -234,18 +221,18 @@ jQuery(function($) {
 					prefix: el.data('prefix'),
 				},
 				cursors;
-
+			
 			if (Keystone.item) {
 				args.item = Keystone.item.id;
 			}
-
+			
 			el.select2({
 				placeholder: 'Search for an image from Cloudinary ...',
 				allowClear: true,
 				multiple: false,
 				width: "60%",
 				loadMorePadding: 100,
-				ajax: {
+				ajax: { 
 					url: '/keystone/api/cloudinary/autocomplete',
 					dataType: 'json',
 					quietMillis: 500,
@@ -274,7 +261,7 @@ jQuery(function($) {
 								items.push(this);
 							}
 						});
-
+	 
 						return { results: items, more: more };
 					}
 				},
@@ -289,7 +276,7 @@ jQuery(function($) {
 							callback({
 								id: result.id,
 								text: result.id
-							});
+							});							
 						});
 					}
 				},
@@ -348,7 +335,7 @@ jQuery(function($) {
 			});
 
 		});
-
+		
 	});
-
+	
 });

@@ -1,12 +1,9 @@
 var keystone = require('../../'),
 	_ = require('underscore'),
 	querystring = require('querystring'),
-	async = require('async'),
-	config = require('config');
+	async = require('async');
 
 exports = module.exports = function(req, res) {
-
-	var locale = req.session.current_locale || config.default_locale;
 	
 	var viewLocals = {
 		validationErrors: {},
@@ -17,7 +14,7 @@ exports = module.exports = function(req, res) {
 		filters = req.list.processFilters(req.query.q),
 		cleanFilters = {},
 		queryFilters = req.list.getSearchFilters(req.query.search, filters),
-		columns = (req.query.cols) ? req.list.expandColumns(req.query.cols, locale) : req.list.defaultColumns;
+		columns = (req.query.cols) ? req.list.expandColumns(req.query.cols) : req.list.defaultColumns;
 	
 	_.each(filters, function(filter, path) {
 		cleanFilters[path] = _.omit(filter, 'field');
@@ -59,7 +56,7 @@ exports = module.exports = function(req, res) {
 	
 	var renderView = function() {
 		
-		var query = req.list.paginate({ filters: queryFilters, page: req.params.page, perPage: req.list.get('perPage'), locale: locale }).sort(sort.by);
+		var query = req.list.paginate({ filters: queryFilters, page: req.params.page, perPage: req.list.get('perPage') }).sort(sort.by);
 		
 		req.list.selectColumns(query, columns);
 		
@@ -131,8 +128,7 @@ exports = module.exports = function(req, res) {
 					colPaths: _.pluck(columns, 'path'),
 					items: items,
 					submitted: req.body || {},
-					query: req.query,
-					current_locale: locale
+					query: req.query
 				}));
 				
 			});

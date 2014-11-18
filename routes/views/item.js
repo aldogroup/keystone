@@ -1,12 +1,10 @@
 var keystone = require('../../'),
 	_ = require('underscore'),
-	async = require('async'),
-	config = require('config');
+	async = require('async');
 
 exports = module.exports = function(req, res) {
-
-	var locale = req.session.current_locale || config.default_locale;
-	var itemQuery = req.list.model[locale].findById(req.params.item);
+	
+	var itemQuery = req.list.model.findById(req.params.item);
 	
 	if (req.list.tracking && req.list.tracking.createdBy) {
 		itemQuery.populate(req.list.tracking.createdBy);
@@ -163,8 +161,7 @@ exports = module.exports = function(req, res) {
 					item: item,
 					relationships: relationships,
 					showRelationships: showRelationships,
-					drilldown: drilldown,
-					current_locale: locale
+					drilldown: drilldown
 				}));
 				
 			});
