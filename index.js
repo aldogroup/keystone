@@ -7,7 +7,9 @@ var fs = require('fs'),
 	moment = require('moment'),
 	numeral = require('numeral'),
 	cloudinary = require('cloudinary'),
-	utils = require('keystone-utils');
+	utils = require('keystone-utils'),
+	config = require('config'),
+	RSVP = require('rsvp');
 
 var templateCache = {};
 
@@ -218,6 +220,111 @@ Keystone.prototype.import = function(dirname) {
 	return doImport(initialPath);
 };
 
+/**
+ * fetches all model data for current locale and returns a promise callback via RSVP
+ * also generates JSON file in /data folder if config.json.auto is set to true
+ *
+ * ####Example:
+ *
+ *     keystone.fetch()
+ *       .then(function(data) {
+ *         // callback to perform once data is successfully fetched
+ *         // where 'data' is your model's data object
+ *       });
+ *
+ * @api public
+ */
+
+Keystone.prototype.fetch = function() {
+	// create empty data object and retrieve current locale
+	var data = {};
+	var locale = process.env.CURRENT_LOCALE || config.default_locale;
+
+	// create new promise function via RSVP
+  	var promise = new RSVP.Promise(function(resolve, reject) {
+  		// #1 async loop through each keystone list object
+  		async.forEach(Object.keys(keystone.lists), function(key, callback) {
+	    	var list = keystone.lists[key];
+	    	var rels = [];
+
+	    	// #2 async loop through each list's field, creating array of related fields
+	    	async.forEach(Object.keys(list.fields),function(key, _callback) {
+	    		var type = list.fields[key].type
+
+	    		if (type == 'relationship') {
+	    			rels.push(key);
+	    		}
+	    		// #2 callback
+	    		_callback();
+	    	}, function() {
+	    		var sortable = config.sortable.join(' ');
+
+	    		// initiate mongoose query, populating related fields and sorting
+		    	list.model[locale].find()
+		      		.populate(rels)
+		      		.sort(sortable)
+		      		.exec(function(err, res) {
+		      			// #3 async loop through each mongoose model, generating data object
+		      			async.each(res, function(_res, __callback) {
+		      				if (_res.page) {
+		      					var _key = _res.page.key;
+
+								if (!_.has(data, _key)) {
+		      						data[_key] = {};
+		      					}
+
+		      					if (!_.has(data[_key], key)) {
+		      						data[_key][key] = [];
+		      					}
+		      					data[_key][key].push(_res);
+		      				} else {
+								if (!_.has(data, key)) {
+		      						data[key] = [];
+		      					}
+		      					data[key].push(_res);
+		      				}
+		      				// #3 callback
+		      				__callback();
+		      			}, function() {
+		      				// #1 callback
+		      				callback();
+		      			});
+		      		});
+		      });
+	  	}, function(err) {
+  			if (err) {
+  				reject(err);
+  			} else {
+  				// if no errors, issue RSVP resolve and pass data object to promise callback
+  				resolve(data);
+  			}
+
+  			// JSON generation
+  			if (config.json.auto == true) {
+  				if (config.json.pretty == true) {
+  					// prettified
+	    			fs.writeFile('./data/data_' + locale +'.json', JSON.stringify(data, undefined, 2), function(err) {
+		      			if (err) {
+		        			console.log(err);
+		      			} else {
+		        			console.log('Model data for locale ' + locale + ' saved and prettified to data_' + locale + '.json');
+		        		}
+		        	});
+		        } else {
+		        	// unprettified
+	    			fs.writeFile('./data/data_' + locale + '.json', JSON.stringify(data), function(err) {
+		      			if (err) {
+		        			console.log(err);
+		      			} else {
+		        			console.log('Model data for locale ' + locale + ' saved to data_' + locale + '.json');
+		        		}
+	      			});
+	      		}
+	      	}
+	    });
+  	});
+  	return promise;
+};
 
 /**
  * Applies Application updates
