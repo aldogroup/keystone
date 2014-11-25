@@ -17,7 +17,7 @@ exports = module.exports = function(req, res) {
 		filters = req.list.processFilters(req.query.q),
 		cleanFilters = {},
 		queryFilters = req.list.getSearchFilters(req.query.search, filters),
-		columns = (req.query.cols) ? req.list.expandColumns(req.query.cols) : req.list.defaultColumns;
+		columns = (req.query.cols) ? req.list.expandColumns(req.query.cols, locale) : req.list.defaultColumns;
 	
 	_.each(filters, function(filter, path) {
 		cleanFilters[path] = _.omit(filter, 'field');
@@ -205,7 +205,7 @@ exports = module.exports = function(req, res) {
 		
 		if (!checkCSRF()) return renderView();
 		
-		item = new req.list.model();
+		item = new req.list.model[locale];
 		item.save(function(err) {
 			
 			if (err) {
@@ -224,7 +224,7 @@ exports = module.exports = function(req, res) {
 		
 		if (!checkCSRF()) return renderView();
 		
-		item = new req.list.model();
+		item = new req.list.model[locale];
 		var updateHandler = item.getUpdateHandler(req);
 		
 		viewLocals.showCreateForm = true; // always show the create form after a create. success will redirect.
