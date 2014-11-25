@@ -40,7 +40,7 @@ html
 						each locale in config.locales
 							each val, key in config.language_map
 								if locale == key
-									if locale == config.current_locale
+									if locale == current_locale
 										li(class='active'): a(href='/keystone/locale/' + locale) #{val}
 									else
 										li: a(href='/keystone/locale/' + locale) #{val}
