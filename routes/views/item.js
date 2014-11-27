@@ -145,7 +145,6 @@ exports = module.exports = function(req, res) {
 			var loadPage = function(cb) {
 				if (module_page) {
 					itemQuery.populate('page _page').exec(function(err, res) {
-						console.log(res);
 						var page = res.page || res._page;
 
 						module_page = page.key;
