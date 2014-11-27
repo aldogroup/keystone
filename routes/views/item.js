@@ -140,7 +140,7 @@ exports = module.exports = function(req, res) {
 				async.eachSeries(req.list.uiElements.filter(onlyFields), compile , cb);
 			};
 
-			module_page = item.page;
+			module_page = item.page || item._page;
 
 			var loadPage = function(cb) {
 				if (module_page) {
@@ -148,6 +148,8 @@ exports = module.exports = function(req, res) {
 						module_page = res.page.key;
 	  					cb();
 					});
+				} else {
+					cb();
 				}
 			};
 			
