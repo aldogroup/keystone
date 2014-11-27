@@ -1,7 +1,8 @@
 var _ = require('underscore'),
 	async = require('async'),
 	keystone = require('../../'),
-	jade = require('jade');
+	jade = require('jade'),
+	config = require('config');
 
 exports = module.exports = function(req, res) {
 	var locale = req.session.current_locale || config.default_locale;
