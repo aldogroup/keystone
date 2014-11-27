@@ -139,14 +139,25 @@ exports = module.exports = function(req, res) {
 				var compile = function(item, callback) { item.field.compile('form',callback); };
 				async.eachSeries(req.list.uiElements.filter(onlyFields), compile , cb);
 			};
-			
+
+			module_page = item.page;
+
+			var loadPage = function(cb) {
+				if (module_page) {
+					itemQuery.populate('page').exec(function(err, res) {
+						module_page = res.page.key;
+	  					cb();
+					});
+				}
+			};
 			
 			/** Render View */
 			
 			async.parallel([
 				loadDrilldown,
 				loadRelationships,
-				loadFormFieldTemplates
+				loadFormFieldTemplates,
+				loadPage
 			], function(err) {
 				
 				// TODO: Handle err
@@ -164,7 +175,9 @@ exports = module.exports = function(req, res) {
 					relationships: relationships,
 					showRelationships: showRelationships,
 					drilldown: drilldown,
-					current_locale: locale
+					config: config,
+					current_locale: locale,
+					module_page: module_page
 				}));
 				
 			});

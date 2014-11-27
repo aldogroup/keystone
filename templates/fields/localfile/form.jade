@@ -6,18 +6,15 @@
 	.field-ui(class=hasFile ? 'has-file' : false)
 		.file-container
 			.file-details
-				if hasFile
-					.file-values
-						a(href=field.href(item), target='_blank').field-value
-							if field.hasFormatter()
-								!=field.format(item)
-							else
-								=field.format(item)
+				.file-values
+					a(href=field.format(item)).fancybox.field-value
+						if field.hasFormatter()
+							img(src=config.public_dir + 'img/' + module_page + '/' + field.format(item), style="max-width:100%;")
 				.upload-queued.pull-left
 					.alert.alert-success File <span class="file-name"></span>selected - save to upload
 				.delete-queued.pull-left
 					.alert.alert-danger
-		.file-toolbar
+		//.file-toolbar
 			div.pull-left
 				button(type='button').btn.btn-default.btn-upload-file=(hasFile ? 'Change' : 'Upload' ) + ' File'
 				button(type='button', data-alt-text='Delete File', style=(hasFile ? '' : 'display: none;')).btn.btn-link.btn-cancel.btn-delete-file Remove File
